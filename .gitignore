@@ -1,0 +1,12 @@
+.DS_Store
+node_modules/
+.next/
+out/
+dist/
+build/
+.env
+.env.*
+*.log
+preview-desktop.png
+openjourney-relay-preview.png
+*.tar.gz

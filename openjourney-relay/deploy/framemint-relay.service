@@ -1,0 +1,16 @@
+[Unit]
+Description=FrameMint Relay Next.js app
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/framemint-relay
+Environment=NODE_ENV=production
+Environment=PORT=80
+Environment=HOSTNAME=0.0.0.0
+ExecStart=/usr/bin/npm run start -- -H 0.0.0.0 -p 80
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
