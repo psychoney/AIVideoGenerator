@@ -10,3 +10,4 @@ build/
 preview-desktop.png
 openjourney-relay-preview.png
 *.tar.gz
+.vercel
