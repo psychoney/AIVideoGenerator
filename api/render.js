@@ -61,7 +61,7 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${klingToken()}`
         },
         body: JSON.stringify({
-          model_name: process.env.KLING_MODEL || "kling-v2-1",
+          model_name: process.env.KLING_MODEL || "kling-v2-1-master",
           prompt,
           duration: dur,
           aspect_ratio: ratio,
