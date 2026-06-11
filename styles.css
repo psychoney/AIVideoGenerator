@@ -768,6 +768,113 @@ p { margin: 0; }
   padding: 1px 8px;
 }
 
+/* ---------- modals (auth / top-up) ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(10, 21, 66, 0.45);
+  backdrop-filter: blur(3px);
+}
+.modal {
+  width: min(420px, 100%);
+  background: var(--bg);
+  border: 2px solid var(--ink);
+  box-shadow: 10px 10px 0 var(--ink-faint);
+}
+.modal .field { padding: 16px 20px 0; }
+.modal input {
+  width: 100%;
+  background: var(--bg);
+  border: var(--line);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 10px 12px;
+}
+.modal input:focus { outline: none; border-color: var(--ink); }
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--bg);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.modal-footer { padding: 16px 20px 20px; }
+.auth-note {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--success);
+  padding: 14px 20px 0;
+}
+.auth-note strong { color: var(--ink); }
+.auth-error {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #d6002a;
+  padding: 10px 20px 0;
+}
+.modal > .auth-note:last-of-type { padding-bottom: 20px; }
+
+.topup-btn {
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  margin-left: 6px;
+  cursor: pointer;
+}
+.topup-btn:hover { background: var(--fg); }
+
+.pack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 20px 20px 0;
+}
+.pack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 18px 8px;
+  background: var(--bg);
+  border: var(--line-strong);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pack:hover { border-color: var(--ink); background: var(--ink-ghost); }
+.pack.featured { border: 2px solid var(--ink); }
+.pack strong {
+  font-family: var(--pixel);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ink);
+}
+.pack span {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+.pack em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fg);
+  margin-top: 6px;
+}
+
 /* ---------- bands ---------- */
 
 .band { padding: 96px 0; border-top: var(--line); }

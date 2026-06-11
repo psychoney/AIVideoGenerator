@@ -5,6 +5,12 @@
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => [...document.querySelectorAll(sel)];
 
+/* ---------- Supabase auth ---------- */
+const SUPA_URL = "https://ghmigcdqggaksksnxkav.supabase.co";
+const SUPA_KEY = "sb_publishable_4uuO1uBClB73dfpcj3oi2Q_4PY1K9YM"; // publishable — safe in the client
+const sb = window.supabase ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+let authSession = null;
+
 /* ---------- ticker: duplicate content for seamless loop ---------- */
 const tickerTrack = $("#tickerTrack");
 tickerTrack.innerHTML += tickerTrack.innerHTML;
@@ -106,9 +112,9 @@ const MODE_CONFIG = {
 
 let currentMode = "text";
 
-$$(".mode-tab").forEach((tab) => {
+$$(".mode-tab[data-mode]").forEach((tab) => {
   tab.addEventListener("click", () => {
-    $$(".mode-tab").forEach((t) => {
+    $$(".mode-tab[data-mode]").forEach((t) => {
       t.classList.remove("active");
       t.setAttribute("aria-selected", "false");
     });
@@ -189,10 +195,160 @@ function renderProgress(pct) {
   progressPct.textContent = `${Math.round(pct)}%`;
 }
 
-/* ---------- fake render pipeline ---------- */
+/* ---------- render pipeline state ---------- */
 let rendering = false;
-let credits = 1200;
+let credits = 1200; // demo balance; replaced by the server balance after login
 let jobCount = 0;
+
+function showCredits(value) {
+  credits = value;
+  creditBalance.textContent = Number(value).toLocaleString();
+}
+
+async function fetchCredits() {
+  if (!sb || !authSession) return;
+  const { data, error } = await sb.from("profiles").select("credits").single();
+  if (!error && data) showCredits(data.credits);
+  else logLine("[SYS ] could not load balance — run supabase-setup.sql?", "dim");
+}
+
+/* ---------- auth UI ---------- */
+const authModal = $("#authModal");
+const authButton = $("#authButton");
+const topUpButton = $("#topUpButton");
+const authError = $("#authError");
+const authNote = $("#authNote");
+const authSubmit = $("#authSubmit");
+let authTab = "login";
+
+function updateAuthUI() {
+  if (authSession) {
+    const email = authSession.user.email || "user";
+    authButton.textContent = `⏻ ${email.length > 18 ? email.slice(0, 15) + "…" : email}`;
+    authButton.title = "Sign out";
+    topUpButton.hidden = false;
+  } else {
+    authButton.textContent = "LOGIN";
+    authButton.title = "Sign in";
+    topUpButton.hidden = true;
+    showCredits(1200); // back to the demo counter
+  }
+}
+
+function openAuthModal() {
+  authError.hidden = true;
+  authModal.hidden = false;
+  $("#authEmail").focus();
+}
+
+authButton.addEventListener("click", async () => {
+  if (!sb) return logLine("[ERR ] auth unavailable — supabase script blocked", "err");
+  if (authSession) {
+    await sb.auth.signOut();
+    logLine("$ auth --logout ... done", "dim");
+  } else {
+    openAuthModal();
+  }
+});
+
+$("#authClose").addEventListener("click", () => (authModal.hidden = true));
+authModal.addEventListener("click", (e) => {
+  if (e.target === authModal) authModal.hidden = true;
+});
+
+$$("[data-auth-tab]").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    $$("[data-auth-tab]").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    authTab = tab.dataset.authTab;
+    authSubmit.textContent = authTab === "login" ? "▶ LOGIN" : "▶ CREATE ACCOUNT";
+    authNote.innerHTML =
+      authTab === "login"
+        ? "&gt; welcome back_"
+        : "&gt; new accounts get <strong>100 free credits</strong>_";
+    authError.hidden = true;
+  });
+});
+
+$("#authForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!sb) return;
+  const email = $("#authEmail").value.trim();
+  const password = $("#authPassword").value;
+  authSubmit.disabled = true;
+  authError.hidden = true;
+  try {
+    if (authTab === "register") {
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) throw error;
+      if (!data.session) {
+        authNote.innerHTML = "&gt; confirmation email sent — verify, then log in_";
+        return;
+      }
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    }
+    authModal.hidden = true;
+  } catch (err) {
+    authError.textContent = `[ERR ] ${err.message}`;
+    authError.hidden = false;
+  } finally {
+    authSubmit.disabled = false;
+  }
+});
+
+if (sb) {
+  sb.auth.onAuthStateChange((_event, session) => {
+    authSession = session;
+    updateAuthUI();
+    if (session) {
+      logLine(`$ auth --login ${session.user.email} ... OK`, "dim");
+      fetchCredits();
+    }
+  });
+}
+
+/* ---------- recharge UI ---------- */
+const rechargeModal = $("#rechargeModal");
+const rechargeError = $("#rechargeError");
+
+topUpButton.addEventListener("click", () => {
+  rechargeError.hidden = true;
+  rechargeModal.hidden = false;
+});
+$("#rechargeClose").addEventListener("click", () => (rechargeModal.hidden = true));
+rechargeModal.addEventListener("click", (e) => {
+  if (e.target === rechargeModal) rechargeModal.hidden = true;
+});
+
+$$(".pack").forEach((pack) => {
+  pack.addEventListener("click", async () => {
+    if (!authSession) return openAuthModal();
+    pack.disabled = true;
+    rechargeError.hidden = true;
+    try {
+      const res = await fetch("/api/recharge", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authSession.access_token}`
+        },
+        body: JSON.stringify({ pack: pack.dataset.pack })
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j.error || `recharge ${res.status}`);
+      showCredits(j.balance);
+      logLine(`[PAY ] +${j.credits} credits · balance ${j.balance}`, "amber");
+      rechargeModal.hidden = true;
+    } catch (err) {
+      rechargeError.textContent = `[ERR ] ${err.message}`;
+      rechargeError.hidden = false;
+    } finally {
+      pack.disabled = false;
+    }
+  });
+});
 
 const PIPELINE = [
   { at: 4, msg: "$ framemint render --queue ... job accepted", tone: "dim" },
@@ -276,17 +432,29 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function submitRender(payload, hooks) {
   let created;
   try {
+    const headers = { "Content-Type": "application/json" };
+    if (authSession) headers.Authorization = `Bearer ${authSession.access_token}`;
     const res = await fetch("/api/render", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ ...payload, referenceImage: undefined })
     });
     if (res.status === 501 || res.status === 404 || res.status === 405) {
       hooks.onLog("[SYS ] live engine keys not configured — demo mode", "dim");
       return simulateRender(payload, hooks);
     }
+    if (res.status === 401) {
+      hooks.onFail("sign in for live renders");
+      return openAuthModal();
+    }
+    if (res.status === 402) {
+      hooks.onFail("insufficient credits");
+      rechargeModal.hidden = false;
+      return;
+    }
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `api ${res.status}`);
     created = await res.json();
+    if (typeof created.balance === "number") showCredits(created.balance);
   } catch (e) {
     if (e instanceof TypeError) {
       // network error: no backend here (file:// or plain static server)
@@ -306,9 +474,15 @@ async function submitRender(payload, hooks) {
       if (j.status === "succeeded" && j.videoUrl) {
         hooks.onProgress(100);
         hooks.onLog("[DONE] render complete ✔ output ready", "");
-        return hooks.onDone({ videoUrl: j.videoUrl, cost: payload.estimatedCost });
+        return hooks.onDone({ videoUrl: j.videoUrl, cost: created.cost ?? payload.estimatedCost, live: true });
       }
-      if (j.status === "failed") return hooks.onFail(j.error || "upstream render failed");
+      if (j.status === "failed") {
+        if (j.refunded) {
+          hooks.onLog("[PAY ] credits refunded", "amber");
+          fetchCredits();
+        }
+        return hooks.onFail(j.error || "upstream render failed");
+      }
       pct = Math.min(pct + 6, 92);
       hooks.onProgress(pct);
       hooks.onLog(`[GEN ] upstream status: ${j.status} ...`, "dim");
@@ -368,8 +542,11 @@ function finishRender(result, payload) {
   generateButton.textContent = "▶ RENDER";
   sysStatus.textContent = "SYS:READY";
 
-  credits -= result.cost;
-  creditBalance.textContent = credits.toLocaleString();
+  if (result.live) {
+    fetchCredits(); // server already deducted at submit time — just resync
+  } else {
+    showCredits(credits - result.cost);
+  }
 
   jobCount++;
   const res = payload.resolution === "4k" ? "4K" : `${payload.resolution}P`;
@@ -456,5 +633,6 @@ setInterval(() => {
 }, 9000);
 
 /* ---------- boot message ---------- */
+if (!sb) showCredits(1200); // auth script blocked → plain demo counter
 logLine("$ framemint --boot v2.0 ... OK", "dim");
-logLine("$ 12 models linked · 40 voices loaded · standby_", "dim");
+logLine("$ 2 engines linked · auto-routing armed · standby_", "dim");

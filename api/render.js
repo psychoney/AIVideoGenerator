@@ -1,10 +1,17 @@
-/* POST /api/render — create a video generation job upstream.
-   Body: { prompt, model: "auto"|"seedance"|"kling21", ratio, duration, resolution }
-   Returns: { jobId, engine }  ·  501 when no upstream keys are configured (frontend falls back to demo mode). */
+/* POST /api/render — authenticated: deduct credits server-side, then create
+   the upstream job. Cost is computed HERE (client numbers are display only).
+   Returns: { jobId, engine, cost, balance }
+     401 → not signed in (frontend opens the auth modal)
+     402 → insufficient credits
+     501 → engine keys or auth backend not configured (frontend demo mode) */
 import {
   ARK_BASE, SEEDANCE_MODEL, KLING_BASE,
   hasSeedance, hasKling, klingToken, upstreamJson
 } from "./_lib.js";
+import { getUser, hasAuthBackend, spendCredits, addCredits, insertRow } from "./_auth.js";
+
+const ENGINE_COST = { seedance: 9, kling21: 12 };
+const RES_MULT = { 720: 0.8, 1080: 1, "4k": 1.6 };
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -24,15 +31,27 @@ export default async function handler(req, res) {
 
   let engine = model;
   if (model === "auto") engine = hasSeedance() ? "seedance" : "kling21";
+  const engineReady = engine === "seedance" ? hasSeedance() : hasKling();
+  if (!engineReady || !ENGINE_COST[engine]) {
+    return res.status(501).json({ error: `engine ${engine} not configured`, demo: true });
+  }
+  if (!hasAuthBackend()) {
+    return res.status(501).json({ error: "auth backend not configured", demo: true });
+  }
+
+  const user = await getUser(req);
+  if (!user) return res.status(401).json({ error: "sign in required" });
+
+  const dur = Math.min(Number(duration) || 5, 10);
+  const cost = Math.max(1, Math.round(ENGINE_COST[engine] * (dur / 5) * (RES_MULT[resolution] ?? 1)));
+
+  const balance = await spendCredits(user.id, cost);
+  if (balance < 0) return res.status(402).json({ error: "insufficient credits" });
 
   try {
+    let jobId;
     if (engine === "seedance") {
-      if (!hasSeedance()) {
-        return res.status(501).json({ error: "ARK_API_KEY not configured", demo: true });
-      }
-      // Volcano Ark passes generation params as trailing text flags.
       const resLabel = resolution === "4k" ? "1080p" : `${resolution}p`;
-      const dur = Math.min(Number(duration) || 5, 10);
       const text = `${prompt} --ratio ${ratio} --resolution ${resLabel} --duration ${dur}`;
       const data = await upstreamJson(`${ARK_BASE}/contents/generations/tasks`, {
         method: "POST",
@@ -45,15 +64,8 @@ export default async function handler(req, res) {
           content: [{ type: "text", text }]
         })
       });
-      return res.status(200).json({ jobId: data.id, engine: "seedance" });
-    }
-
-    if (engine === "kling21") {
-      if (!hasKling()) {
-        return res.status(501).json({ error: "KLING keys not configured", demo: true });
-      }
-      // Kling supports 5s / 10s only.
-      const dur = Number(duration) >= 10 ? "10" : "5";
+      jobId = data.id;
+    } else {
       const data = await upstreamJson(`${KLING_BASE}/v1/videos/text2video`, {
         method: "POST",
         headers: {
@@ -63,16 +75,25 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           model_name: process.env.KLING_MODEL || "kling-v2-1-master",
           prompt,
-          duration: dur,
+          duration: dur >= 10 ? "10" : "5",
           aspect_ratio: ratio,
           mode: "std"
         })
       });
-      return res.status(200).json({ jobId: data.data.task_id, engine: "kling21" });
+      jobId = data.data.task_id;
     }
 
-    return res.status(400).json({ error: `engine "${engine}" is not enabled yet` });
+    await insertRow("render_jobs", {
+      id: String(jobId),
+      user_id: user.id,
+      engine,
+      prompt: String(prompt).slice(0, 500),
+      cost
+    });
+    return res.status(200).json({ jobId, engine, cost, balance });
   } catch (e) {
+    // upstream rejected the job — give the credits back
+    await addCredits(user.id, cost).catch(() => {});
     return res.status(502).json({ error: String(e.message || e) });
   }
 }

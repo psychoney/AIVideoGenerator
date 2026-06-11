@@ -42,11 +42,67 @@
       <div class="nav-actions">
         <span class="credit-readout" title="Credits remaining">
           <span class="blink-dot" aria-hidden="true"></span>
-          CREDITS: <strong id="creditBalance">1,200</strong>
+          CREDITS: <strong id="creditBalance">--</strong>
+          <button class="topup-btn" id="topUpButton" type="button" hidden>+ TOP UP</button>
         </span>
+        <button class="btn btn-ghost" id="authButton" type="button">LOGIN</button>
         <a class="btn btn-solid" href="#console">RENDER ▸</a>
       </div>
     </header>
+
+    <!-- ========== AUTH MODAL ========== -->
+    <div class="modal-backdrop" id="authModal" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Sign in">
+        <div class="console-titlebar">
+          <span class="tb-dots" aria-hidden="true">● ● ●</span>
+          <span class="tb-title">FRAMEMINT://AUTH</span>
+          <button class="modal-close" id="authClose" type="button" aria-label="Close">✕</button>
+        </div>
+        <div class="mode-tabs">
+          <button type="button" class="mode-tab active" data-auth-tab="login">LOGIN</button>
+          <button type="button" class="mode-tab" data-auth-tab="register">REGISTER</button>
+        </div>
+        <form id="authForm">
+          <div class="field">
+            <label class="field-label" for="authEmail">EMAIL</label>
+            <input type="email" id="authEmail" autocomplete="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field">
+            <label class="field-label" for="authPassword">PASSWORD</label>
+            <input type="password" id="authPassword" autocomplete="current-password" placeholder="min. 6 characters" minlength="6" required />
+          </div>
+          <p class="auth-note" id="authNote">&gt; new accounts get <strong>100 free credits</strong>_</p>
+          <p class="auth-error" id="authError" hidden></p>
+          <div class="modal-footer">
+            <button class="btn btn-solid btn-wide" type="submit" id="authSubmit">▶ LOGIN</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========== RECHARGE MODAL ========== -->
+    <div class="modal-backdrop" id="rechargeModal" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Top up credits">
+        <div class="console-titlebar">
+          <span class="tb-dots" aria-hidden="true">● ● ●</span>
+          <span class="tb-title">FRAMEMINT://TOP-UP</span>
+          <button class="modal-close" id="rechargeClose" type="button" aria-label="Close">✕</button>
+        </div>
+        <div class="pack-grid">
+          <button type="button" class="pack" data-pack="starter">
+            <strong>300</strong><span>CREDITS</span><em>$5</em>
+          </button>
+          <button type="button" class="pack featured" data-pack="creator">
+            <strong>1,200</strong><span>CREDITS</span><em>$15</em>
+          </button>
+          <button type="button" class="pack" data-pack="studio">
+            <strong>5,000</strong><span>CREDITS</span><em>$49</em>
+          </button>
+        </div>
+        <p class="auth-note">&gt; payment gateway pending — packs are granted instantly in <strong>simulation mode</strong>_</p>
+        <p class="auth-error" id="rechargeError" hidden></p>
+      </div>
+    </div>
 
     <!-- ========== TICKER ========== -->
     <div class="ticker" aria-hidden="true">
@@ -531,6 +587,7 @@
       </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
