@@ -302,9 +302,13 @@ if (sb) {
   sb.auth.onAuthStateChange((_event, session) => {
     authSession = session;
     updateAuthUI();
+    // defer queries out of the callback — supabase-js holds an internal
+    // auth lock here and a direct query can deadlock
     if (session) {
-      logLine(`$ auth --login ${session.user.email} ... OK`, "dim");
-      fetchCredits();
+      setTimeout(() => {
+        logLine(`$ auth --login ${session.user.email} ... OK`, "dim");
+        fetchCredits();
+      }, 0);
     }
   });
 }
