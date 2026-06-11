@@ -26,6 +26,8 @@
   border-radius: 0 !important; /* hard edges: zero rounded corners anywhere */
 }
 
+[hidden] { display: none !important; }
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 84px;

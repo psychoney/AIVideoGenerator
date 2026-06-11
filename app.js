@@ -268,6 +268,65 @@ function simulateRender(payload, { onLog, onProgress, onDone }) {
   requestAnimationFrame(tick);
 }
 
+/* Live path: POST /api/render then poll /api/job (Seedance via Volcano Ark,
+   Kling via its open platform — keys live server-side). Falls back to the
+   demo pipeline when the proxy or its keys are not deployed. */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function submitRender(payload, hooks) {
+  let created;
+  try {
+    const res = await fetch("/api/render", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...payload, referenceImage: undefined })
+    });
+    if (res.status === 501 || res.status === 404 || res.status === 405) {
+      hooks.onLog("[SYS ] live engine keys not configured — demo mode", "dim");
+      return simulateRender(payload, hooks);
+    }
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `api ${res.status}`);
+    created = await res.json();
+  } catch (e) {
+    if (e instanceof TypeError) {
+      // network error: no backend here (file:// or plain static server)
+      hooks.onLog("[SYS ] no render backend reachable — demo mode", "dim");
+      return simulateRender(payload, hooks);
+    }
+    return hooks.onFail(e.message);
+  }
+
+  hooks.onLog(`[API ] job ${created.jobId} accepted by ${created.engine}`, "amber");
+  let pct = 6;
+  hooks.onProgress(pct);
+  try {
+    for (;;) {
+      await sleep(4000);
+      const j = await (await fetch(`/api/job?id=${encodeURIComponent(created.jobId)}&engine=${created.engine}`)).json();
+      if (j.status === "succeeded" && j.videoUrl) {
+        hooks.onProgress(100);
+        hooks.onLog("[DONE] render complete ✔ output ready", "");
+        return hooks.onDone({ videoUrl: j.videoUrl, cost: payload.estimatedCost });
+      }
+      if (j.status === "failed") return hooks.onFail(j.error || "upstream render failed");
+      pct = Math.min(pct + 6, 92);
+      hooks.onProgress(pct);
+      hooks.onLog(`[GEN ] upstream status: ${j.status} ...`, "dim");
+    }
+  } catch (e) {
+    return hooks.onFail(e.message);
+  }
+}
+
+function failRender(message) {
+  rendering = false;
+  generateButton.disabled = false;
+  generateButton.textContent = "▶ RENDER";
+  sysStatus.textContent = "SYS:READY";
+  renderProgress(0);
+  logLine(`[ERR ] ${message} — no credits charged`, "err");
+}
+
 form.addEventListener("submit", (e) => {
   e.preventDefault();
   if (rendering) return;
@@ -291,10 +350,11 @@ form.addEventListener("submit", (e) => {
 
   logLine(`$ framemint render --model ${modelName} --ratio ${payload.ratio} --t ${payload.duration}s`, "amber");
 
-  simulateRender(payload, {
+  submitRender(payload, {
     onLog: logLine,
     onProgress: renderProgress,
-    onDone: (result) => finishRender(result, payload)
+    onDone: (result) => finishRender(result, payload),
+    onFail: failRender
   });
 });
 

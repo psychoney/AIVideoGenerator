@@ -6,7 +6,7 @@
     <title>FRAMEMINT // AI VIDEO TERMINAL</title>
     <meta
       name="description"
-      content="FRAMEMINT is an AI video terminal: text-to-video, image-to-video, AI avatars, voiceovers and captions — Sora, Veo, Kling and Luma behind one console."
+      content="FRAMEMINT is an AI video terminal: text-to-video, image-to-video, AI avatars, voiceovers and captions — Seedance and Kling behind one console."
     />
     <link
       rel="icon"
@@ -51,14 +51,10 @@
     <!-- ========== TICKER ========== -->
     <div class="ticker" aria-hidden="true">
       <div class="ticker-track" id="tickerTrack">
-        <span>SORA 2 PRO ▚ ONLINE</span>
-        <span>VEO 3.1 ▚ ONLINE</span>
-        <span>KLING 2.1 ▚ ONLINE</span>
-        <span>LUMA RAY 3 ▚ ONLINE</span>
-        <span>HAILUO 02 ▚ ONLINE</span>
-        <span>WAN 2.2 ▚ ONLINE</span>
         <span>SEEDANCE 1.0 ▚ ONLINE</span>
-        <span>PIXVERSE V5 ▚ ONLINE</span>
+        <span>KLING 2.1 ▚ ONLINE</span>
+        <span>AUTO ROUTING ▚ ACTIVE</span>
+        <span>MORE ENGINES ▚ SOON</span>
         <span>TEXT→VIDEO</span>
         <span>IMAGE→VIDEO</span>
         <span>SCRIPT→FILM</span>
@@ -84,7 +80,7 @@
               &gt; <span id="typerText"></span><span class="cursor" aria-hidden="true">▮</span>
             </p>
             <div class="hero-stats">
-              <div><strong data-count="12">0</strong><span>MODELS</span></div>
+              <div><strong data-count="2">0</strong><span>ENGINES</span></div>
               <div><strong data-count="40">0</strong><span>LANGUAGES</span></div>
               <div><strong data-count="4">0</strong><span>K OUTPUT</span></div>
               <div><strong data-count="60">0</strong><span>SEC MAX</span></div>
@@ -139,22 +135,26 @@
             <div class="field">
               <span class="field-label">MODEL // UPSTREAM ENGINE</span>
               <div class="model-grid" id="modelGrid">
-                <button type="button" class="model-cell active" data-model="auto" data-cost="8">
-                  <strong>AUTO</strong><span>smart routing</span><em>≈8 cr/5s</em>
+                <button type="button" class="model-cell active" data-model="auto" data-cost="9">
+                  <strong>AUTO</strong><span>smart routing</span><em>≈9 cr/5s</em>
                 </button>
-                <button type="button" class="model-cell" data-model="sora2" data-cost="24">
-                  <strong>SORA 2</strong><span>cinematic</span><em>24 cr/5s</em>
-                </button>
-                <button type="button" class="model-cell" data-model="veo31" data-cost="20">
-                  <strong>VEO 3.1</strong><span>native audio</span><em>20 cr/5s</em>
+                <button type="button" class="model-cell" data-model="seedance" data-cost="9">
+                  <strong>SEEDANCE</strong><span>multi-shot</span><em>9 cr/5s</em>
                 </button>
                 <button type="button" class="model-cell" data-model="kling21" data-cost="12">
                   <strong>KLING 2.1</strong><span>motion control</span><em>12 cr/5s</em>
                 </button>
-                <button type="button" class="model-cell" data-model="luma" data-cost="10">
+                <!-- engines pending API integration — unhide when live -->
+                <button type="button" class="model-cell" data-model="sora2" data-cost="24" hidden>
+                  <strong>SORA 2</strong><span>cinematic</span><em>24 cr/5s</em>
+                </button>
+                <button type="button" class="model-cell" data-model="veo31" data-cost="20" hidden>
+                  <strong>VEO 3.1</strong><span>native audio</span><em>20 cr/5s</em>
+                </button>
+                <button type="button" class="model-cell" data-model="luma" data-cost="10" hidden>
                   <strong>LUMA RAY</strong><span>light &amp; texture</span><em>10 cr/5s</em>
                 </button>
-                <button type="button" class="model-cell" data-model="wan22" data-cost="6">
+                <button type="button" class="model-cell" data-model="wan22" data-cost="6" hidden>
                   <strong>WAN 2.2</strong><span>best value</span><em>6 cr/5s</em>
                 </button>
               </div>
@@ -250,7 +250,7 @@
               </div>
               <figcaption class="sample-meta">
                 <span class="sm-prompt">&gt; "cockpit POV, formula car at full speed, sun flare through the halo, motion blur on the fencing"</span>
-                <span class="sm-tags"><em>SORA 2</em><em>16:9</em><em>TEXT→VIDEO</em></span>
+                <span class="sm-tags"><em>SEEDANCE 1.0</em><em>16:9</em><em>TEXT→VIDEO</em></span>
               </figcaption>
             </figure>
             <figure class="sample-frame">
@@ -277,8 +277,8 @@
         <div class="shell">
           <header class="band-head">
             <span class="sys-label">[ 03 // MODEL.REGISTRY ]</span>
-            <h2>One terminal. Every frontier model.</h2>
-            <p>AUTO routes each job by ratio, length, budget and live success rate — and fails over automatically.</p>
+            <h2>Two engines live. More on the way.</h2>
+            <p>Seedance and Kling are wired in today. AUTO routes each job between them and fails over automatically — more engines unlock as they come online.</p>
           </header>
           <div class="table-wrap">
             <table class="model-table">
@@ -288,14 +288,15 @@
                 </tr>
               </thead>
               <tbody>
-                <tr><td>M-01</td><td>SORA 2 PRO</td><td>Cinematic narrative, physics</td><td>25s</td><td>1080P</td><td>24 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
-                <tr><td>M-02</td><td>VEO 3.1</td><td>Native audio &amp; dialogue</td><td>8s</td><td>4K</td><td>20 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
-                <tr><td>M-03</td><td>KLING 2.1</td><td>Motion brush, camera control</td><td>10s</td><td>1080P</td><td>12 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
-                <tr><td>M-04</td><td>LUMA RAY 3</td><td>Light, texture, product shots</td><td>10s</td><td>4K</td><td>10 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
-                <tr><td>M-05</td><td>HAILUO 02</td><td>Human performance</td><td>10s</td><td>1080P</td><td>10 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
-                <tr><td>M-06</td><td>WAN 2.2</td><td>Open-source, bulk runs</td><td>10s</td><td>1080P</td><td>6 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
-                <tr><td>M-07</td><td>SEEDANCE 1.0</td><td>Multi-shot continuity</td><td>10s</td><td>1080P</td><td>9 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
-                <tr><td>M-08</td><td>PIXVERSE V5</td><td>Anime &amp; stylized FX</td><td>8s</td><td>1080P</td><td>8 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <tr><td>M-01</td><td>SEEDANCE 1.0</td><td>Multi-shot continuity, ByteDance Doubao</td><td>10s</td><td>1080P</td><td>9 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <tr><td>M-02</td><td>KLING 2.1</td><td>Motion brush, camera control</td><td>10s</td><td>1080P</td><td>12 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <!-- engines pending API integration — unhide when live -->
+                <tr hidden><td>M-03</td><td>SORA 2 PRO</td><td>Cinematic narrative, physics</td><td>25s</td><td>1080P</td><td>24 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <tr hidden><td>M-04</td><td>VEO 3.1</td><td>Native audio &amp; dialogue</td><td>8s</td><td>4K</td><td>20 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <tr hidden><td>M-05</td><td>LUMA RAY 3</td><td>Light, texture, product shots</td><td>10s</td><td>4K</td><td>10 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <tr hidden><td>M-06</td><td>HAILUO 02</td><td>Human performance</td><td>10s</td><td>1080P</td><td>10 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <tr hidden><td>M-07</td><td>WAN 2.2</td><td>Open-source, bulk runs</td><td>10s</td><td>1080P</td><td>6 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
+                <tr hidden><td>M-08</td><td>PIXVERSE V5</td><td>Anime &amp; stylized FX</td><td>8s</td><td>1080P</td><td>8 cr</td><td><span class="status-on">● ONLINE</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -435,7 +436,7 @@
               <div class="price-num"><sup>$</sup>29</div>
               <span class="price-sub">1,200 credits / mo</span>
               <ul>
-                <li>+ All 12 models, incl. Sora 2 &amp; Veo 3.1</li>
+                <li>+ Seedance 1.0 + Kling 2.1, full access</li>
                 <li>+ 4K, no watermark</li>
                 <li>+ Avatars + voice cloning</li>
                 <li>+ Dubbing in 40 languages</li>
@@ -472,7 +473,7 @@
             </details>
             <details class="faq-item">
               <summary>Do all models cost the same credits?</summary>
-              <p>No — each is priced at real compute cost (6–24 cr per 5s). The console shows the estimate before you commit, and failed renders refund in full.</p>
+              <p>No — each is priced at real compute cost (9–12 cr per 5s). The console shows the estimate before you commit, and failed renders refund in full.</p>
             </details>
             <details class="faq-item">
               <summary>Best setup for talking-head videos?</summary>
