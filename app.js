@@ -539,6 +539,7 @@ form.addEventListener("submit", (e) => {
 const SAMPLE_VIDEOS = ["assets/video-1.mp4", "assets/video-2.mp4"];
 const outputPlayer = $("#outputPlayer");
 const outputVideo = $("#outputVideo");
+let currentOutput = null; // { url, name, live } — what the ⇩ MP4 button downloads
 
 function finishRender(result, payload) {
   rendering = false;
@@ -554,12 +555,34 @@ function finishRender(result, payload) {
 
   jobCount++;
   const res = payload.resolution === "4k" ? "4K" : `${payload.resolution}P`;
-  outputName.textContent = `output_${String(jobCount).padStart(3, "0")}.mp4`;
+  const fileName = `output_${String(jobCount).padStart(3, "0")}.mp4`;
+  outputName.textContent = fileName;
   outputSpec.textContent = `${modelName} · ${payload.ratio} · ${payload.duration}S · ${res} · -${result.cost} CR`;
   outputStrip.hidden = false;
   outputVideo.src = result.videoUrl;
   outputPlayer.hidden = true;
+  currentOutput = { url: result.videoUrl, name: `framemint-${fileName}`, live: Boolean(result.live) };
 }
+
+/* download the finished render — live renders stream through /api/download
+   because the engine CDNs don't allow cross-origin downloads */
+$("#downloadButton").addEventListener("click", () => {
+  if (!currentOutput) {
+    logLine("[ERR ] nothing to download — render something first", "err");
+    return;
+  }
+  const a = document.createElement("a");
+  if (currentOutput.live) {
+    a.href = `/api/download?url=${encodeURIComponent(currentOutput.url)}&name=${encodeURIComponent(currentOutput.name)}`;
+  } else {
+    a.href = currentOutput.url;
+    a.download = currentOutput.name;
+  }
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  logLine(`$ download ${currentOutput.name} ... started`, "dim");
+});
 
 /* play the finished render inline */
 $("#outputPlayBtn").addEventListener("click", () => {

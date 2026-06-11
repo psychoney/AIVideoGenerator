@@ -716,6 +716,16 @@ p { margin: 0; }
   font-weight: 700;
   letter-spacing: 0.12em;
 }
+.sample-dl {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 6px;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 12px;
+  transition: background 0.15s;
+}
+.sample-dl:hover { background: var(--bg-raise); }
 .sample-stage {
   position: relative;
   border-bottom: var(--line);
