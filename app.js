@@ -468,6 +468,7 @@ async function submitRender(payload, hooks) {
     return hooks.onFail(e.message);
   }
 
+  if (created.note) hooks.onLog(`[ROUTE] ${created.note}`, "amber");
   hooks.onLog(`[API ] job ${created.jobId} accepted by ${created.engine}`, "amber");
   let pct = 6;
   hooks.onProgress(pct);
