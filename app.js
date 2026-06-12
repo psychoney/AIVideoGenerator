@@ -231,7 +231,8 @@ function updateAuthUI() {
     authButton.textContent = "LOGIN";
     authButton.title = "Sign in";
     topUpButton.hidden = true;
-    showCredits(1200); // back to the demo counter
+    credits = 1200; // internal value for degraded demo mode only
+    creditBalance.textContent = "--"; // no fake balance for visitors
   }
 }
 
@@ -510,6 +511,13 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
   if (rendering) return;
 
+  // rendering requires an account — credits are tracked server-side
+  if (sb && !authSession) {
+    logLine("[ERR ] sign in to render — new accounts get 100 free credits", "err");
+    openAuthModal();
+    return;
+  }
+
   const payload = buildJobPayload();
   if (!payload.prompt) {
     promptInput.focus();
@@ -661,6 +669,6 @@ setInterval(() => {
 }, 9000);
 
 /* ---------- boot message ---------- */
-if (!sb) showCredits(1200); // auth script blocked → plain demo counter
+if (!sb) creditBalance.textContent = "--"; // auth script blocked — sign-in unavailable
 logLine("$ framemint --boot v2.0 ... OK", "dim");
 logLine("$ 2 engines linked · auto-routing armed · standby_", "dim");
