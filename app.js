@@ -546,9 +546,29 @@ form.addEventListener("submit", (e) => {
 });
 
 const SAMPLE_VIDEOS = ["assets/video-1.mp4", "assets/video-2.mp4"];
-const outputPlayer = $("#outputPlayer");
+const playerModal = $("#playerModal");
 const outputVideo = $("#outputVideo");
-let currentOutput = null; // { url, name, live } — what the ⇩ MP4 button downloads
+let currentOutput = null; // { url, name, live, spec } — drives player modal + downloads
+
+function openPlayer() {
+  if (!currentOutput) return;
+  $("#playerTitle").textContent = currentOutput.name.toUpperCase();
+  $("#playerSpec").textContent = `> ${currentOutput.spec}`;
+  if (outputVideo.getAttribute("src") !== currentOutput.url) outputVideo.src = currentOutput.url;
+  playerModal.hidden = false;
+  outputVideo.play().catch(() => {});
+}
+function closePlayer() {
+  outputVideo.pause();
+  playerModal.hidden = true;
+}
+$("#playerClose").addEventListener("click", closePlayer);
+playerModal.addEventListener("click", (e) => {
+  if (e.target === playerModal) closePlayer();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !playerModal.hidden) closePlayer();
+});
 
 function finishRender(result, payload) {
   rendering = false;
@@ -565,17 +585,17 @@ function finishRender(result, payload) {
   jobCount++;
   const res = payload.resolution === "4k" ? "4K" : `${payload.resolution}P`;
   const fileName = `output_${String(jobCount).padStart(3, "0")}.mp4`;
+  const spec = `${modelName} · ${payload.ratio} · ${payload.duration}S · ${res} · -${result.cost} CR`;
   outputName.textContent = fileName;
-  outputSpec.textContent = `${modelName} · ${payload.ratio} · ${payload.duration}S · ${res} · -${result.cost} CR`;
+  outputSpec.textContent = spec;
   outputStrip.hidden = false;
-  outputVideo.src = result.videoUrl;
-  outputPlayer.hidden = true;
-  currentOutput = { url: result.videoUrl, name: `framemint-${fileName}`, live: Boolean(result.live) };
+  currentOutput = { url: result.videoUrl, name: `framemint-${fileName}`, live: Boolean(result.live), spec };
+  openPlayer(); // show the finished render front and center
 }
 
 /* download the finished render — live renders stream through /api/download
    because the engine CDNs don't allow cross-origin downloads */
-$("#downloadButton").addEventListener("click", () => {
+function downloadCurrent() {
   if (!currentOutput) {
     logLine("[ERR ] nothing to download — render something first", "err");
     return;
@@ -591,18 +611,14 @@ $("#downloadButton").addEventListener("click", () => {
   a.click();
   a.remove();
   logLine(`$ download ${currentOutput.name} ... started`, "dim");
-});
+}
+$("#downloadButton").addEventListener("click", downloadCurrent);
+$("#playerDownload").addEventListener("click", downloadCurrent);
 
-/* play the finished render inline */
+/* reopen the finished render in the player modal */
 $("#outputPlayBtn").addEventListener("click", () => {
-  if (outputPlayer.hidden) {
-    outputPlayer.hidden = false;
-    outputVideo.play();
-    logLine(`$ play ${outputName.textContent}`, "dim");
-  } else {
-    outputVideo.pause();
-    outputPlayer.hidden = true;
-  }
+  openPlayer();
+  if (currentOutput) logLine(`$ play ${currentOutput.name}`, "dim");
 });
 
 /* ---------- sample gallery: hover or click to play ---------- */

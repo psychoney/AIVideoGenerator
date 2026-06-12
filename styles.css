@@ -662,18 +662,6 @@ p { margin: 0; }
 .os-thumb:hover { background: var(--fg); cursor: pointer; }
 .os-thumb { border: none; }
 
-.output-player {
-  margin: 0 16px 16px;
-  border: 1px dashed var(--ink);
-  border-top: none;
-}
-.output-player[hidden] { display: none; }
-.output-player video {
-  display: block;
-  width: 100%;
-  background: var(--bg);
-}
-
 /* ---------- output samples ---------- */
 
 .sample-note {
@@ -880,6 +868,33 @@ p { margin: 0; }
   color: var(--fg);
   margin-top: 6px;
 }
+
+/* player modal */
+.modal-player { width: min(780px, 94vw); }
+.modal-player video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+.player-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+}
+.player-spec {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--success);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.player-meta .btn { padding: 8px 16px; font-size: 12px; flex-shrink: 0; }
 
 /* ---------- bands ---------- */
 

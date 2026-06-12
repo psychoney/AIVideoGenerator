@@ -100,6 +100,22 @@
       </div>
     </div>
 
+    <!-- ========== PLAYER MODAL ========== -->
+    <div class="modal-backdrop" id="playerModal" hidden>
+      <div class="modal modal-player" role="dialog" aria-modal="true" aria-label="Render preview">
+        <div class="console-titlebar">
+          <span class="tb-dots" aria-hidden="true">● ● ●</span>
+          <span class="tb-title" id="playerTitle">OUTPUT.MP4</span>
+          <button class="modal-close" id="playerClose" type="button" aria-label="Close">✕</button>
+        </div>
+        <video id="outputVideo" controls playsinline preload="auto"></video>
+        <div class="player-meta">
+          <span class="player-spec" id="playerSpec">—</span>
+          <button class="btn btn-solid" type="button" id="playerDownload">⇩ DOWNLOAD</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ========== TICKER ========== -->
     <div class="ticker" aria-hidden="true">
       <div class="ticker-track" id="tickerTrack">
@@ -271,9 +287,6 @@
                 <small id="outputSpec">—</small>
               </span>
               <button class="btn btn-ghost" type="button" id="downloadButton">⇩ MP4</button>
-            </div>
-            <div class="output-player" id="outputPlayer" hidden>
-              <video id="outputVideo" muted loop playsinline preload="none"></video>
             </div>
           </form>
         </div>
