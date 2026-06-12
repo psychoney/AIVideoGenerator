@@ -61,6 +61,14 @@ export async function insertRow(table, row) {
   if (!res.ok) throw new Error(`insert ${table}: ${res.status} ${await res.text()}`);
 }
 
+export async function fetchRows(table, query) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${table}?${query}`, {
+    headers: svcHeaders()
+  });
+  if (!res.ok) throw new Error(`fetch ${table}: ${res.status}`);
+  return res.json();
+}
+
 /* Conditional update; returns the updated rows (empty array if the
    where-clause matched nothing) so callers can act exactly once. */
 export async function updateRows(table, query, patch) {

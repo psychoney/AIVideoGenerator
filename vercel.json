@@ -1,6 +1,9 @@
 {
   "cleanUrls": true,
   "regions": ["hkg1"],
+  "functions": {
+    "api/job.js": { "maxDuration": 60 }
+  },
   "headers": [
     {
       "source": "/assets/(.*)",

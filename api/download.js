@@ -4,7 +4,7 @@
    Streams chunk-by-chunk to stay clear of the function response-size limit. */
 import { Readable } from "node:stream";
 
-const ALLOWED_HOSTS = [/\.volces\.com$/i, /\.klingai\.com$/i];
+const ALLOWED_HOSTS = [/\.volces\.com$/i, /\.klingai\.com$/i, /\.supabase\.co$/i];
 
 export default async function handler(req, res) {
   const { url, name } = req.query || {};
